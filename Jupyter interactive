@@ -1,0 +1,442 @@
+# %% In [1]:
+get_ipython().run_line_magic('pip', 'install comet_ml torch datasets transformer scikit-learn')
+
+# %% In [2]:
+get_ipython().run_line_magic('pip', 'install comet_ml torch datasets transformers scikit-learn')
+
+# %% In [3]:
+Initialize Comet
+
+# %% In [4]:
+Initialize Comet
+
+# %% In [5]:
+import comet_ml
+
+comet_ml.init(project_name = "imdb-distrilbart")
+
+# %% In [6]:
+PRE_TRAINED_MODEL_NAME = "distilbert-base-uncased"
+SEED = 20
+
+# %% In [7]:
+from transformers import AutoTokenizer, Tranier, TrainingArguments
+from datasets import load_dataset
+
+raw_datasets = load_dataset("imdb")
+
+# %% In [8]:
+get_ipython().system('pip install Tranier')
+
+# %% In [9]:
+from transformers import AutoTokenizer, Tranier, TrainingArguments
+from datasets import load_dataset
+
+raw_datasets = load_dataset()
+
+# %% In [10]:
+get_ipython().system('pip install transformers ')
+
+# %% In [11]:
+from transformers import AutoTokenizer, Trainer, TrainingArguments
+from datasets import load_dataset
+
+raw_datasets = load_datasets("imdb")
+
+# %% In [12]:
+from transformers import AutoTokenizer, Trainer, TrainingArguments
+from datasets import load_dataset
+
+raw_datasets = load_dataset("imdb")
+
+# %% In [13]:
+tokenizer = AutoTokenizer.from_pretrained(PRE_TRAINED_MODEL_NAME)
+
+# %% In [14]:
+def tokenize_function(examples):
+  return tokenizer(examples["text"],padding="max_length", truncation=True)
+
+tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)  
+
+# %% In [15]:
+from transformers import DataCollactorWithPadding 
+
+data_collator= data_CollatorWithPadding(tokenizer=tokenizer)
+
+# %% In [16]:
+get_ipython().system('pip install  transformers ')
+
+# %% In [17]:
+from transformers import DataCollactorWithPadding 
+
+data_collator= DataCollatorWithPadding(tokenizer=tokenizer)
+
+# %% In [18]:
+from transformers import DataCollatorWithPadding 
+
+data_collator= DataCollatorWithPadding(tokenizer=tokenizer)
+
+# %% In [19]:
+train_dataset = tokenized_datasets["train"].shuffle(SEED).select(range(200))
+eval_dataset = tokenized_datasets["test"].shuffle(SEED).select
+
+# %% In [20]:
+train_dataset = tokenized_datasets["train"].shuffle(SEED).select(range(200))
+eval_dataset = tokenized_datasets["test"].shuffle(SEED).select(range(200))
+
+# %% In [21]:
+train_dataset = tokenized_datasets["train"].shuffle(SEED).select(range(200))
+eval_dataset = tokenized_datasets["test"].shuffle(SEED).select()
+
+# %% In [22]:
+train_dataset = tokenized_datasets["train"].shuffle(SEED).select(range(200))
+eval_dataset = tokenized_datasets["test"].shuffle(SEED).select(range(200))
+
+# %% In [23]:
+from transformers import AutoModelForSequenceClassification
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    PRE_TRAINED_MODEL_NAME, num_labels=2
+)
+
+# %% In [24]:
+from scikit.metrics import accuracy_score , precision_recall_fscore_support 
+
+def get_example(index):
+  return eval_dataset[index]["text"]
+
+def compute_metrics(pred):
+  experiment = comet_ml.get_global_experiment()
+  
+  labels = pred.label_ids
+  preds = pred.predictions.argmax(-1)
+  precision,recall, f1, _ = precision_recall_fscore_support(
+      labels, preds, average="macro"
+  )
+  acc = accuracy 
+
+# %% In [25]:
+from six import iteritems
+from sklearn.metrics import accuracy_score , precision_recall_fscore_support 
+
+def get_example(index):
+  return eval_dataset[index]["text"]
+
+def compute_metrics(pred):
+  experiment = comet_ml.get_global_experiment()
+  
+  labels = pred.label_ids
+  preds = pred.predictions.argmax(-1)
+  precision,recall, f1, _ = precision_recall_fscore_support(
+      labels, preds, average="macro"
+  )
+  acc = accuracy_score(labels,preds)
+
+  if experiment:
+    epoch = int(experiment.curr_epoch) if experiment.curr_epoch is not None else 0
+    experiment.set_epoch(epoch)
+    experiment.log_confusion_matrix(
+        y_true = labels,
+        y_predicted = preds,
+        file_name = f"confusion-matrix-epoch-{epoch}.json",
+        labels = ["negative","positive"],
+        index_to_example_function = get_example
+    )
+    for i in range(20):
+      experiment.log_text(get_example(i), metadata={"label": labels[i],item()})
+
+    return {"accuracy":acc, "f1": f1, "precision": precision,"recall": recall}  
+
+# %% In [26]:
+from six import iteritems
+from sklearn.metrics import accuracy_score , precision_recall_fscore_support 
+
+def get_example(index):
+  return eval_dataset[index]["text"]
+
+def compute_metrics(pred):
+  experiment = comet_ml.get_global_experiment()
+  
+  labels = pred.label_ids
+  preds = pred.predictions.argmax(-1)
+  precision,recall, f1, _ = precision_recall_fscore_support(
+      labels, preds, average="macro"
+  )
+  acc = accuracy_score(labels,preds)
+
+  if experiment:
+    epoch = int(experiment.curr_epoch) if experiment.curr_epoch is not None else 0
+    experiment.set_epoch(epoch)
+    experiment.log_confusion_matrix(
+        y_true = labels,
+        y_predicted = preds,
+        file_name = f"confusion-matrix-epoch-{epoch}.json",
+        labels = ["negative","positive"],
+        index_to_example_function = get_example
+    )
+    for i in range(20):
+      experiment.log_text(get_example(i), metadata={"label": labels[i].item()})
+
+    return {"accuracy":acc, "f1": f1, "precision": precision,"recall": recall}  
+
+# %% In [27]:
+get_ipython().run_line_magic('env', 'COMET_MODE=ONLINE')
+get_ipython().run_line_magic('env', 'COMET_LOG_ASSETS=TRUE')
+
+training_args = TrainingArguments(
+    seed=SEED,
+    output_dir="./results",
+    overwrite_output_dir= True,
+    num_train_epochs=1,
+    do_train=True,
+    do_eval=True,
+    evaluation_strategy="steps"
+    eval_steps=25,
+    save_strategy="steps",
+    save_total_limit=10,
+    save_steps=25,
+    per_device_train_batch_size=8
+)
+
+trainer = Trainer (
+    model=model,
+    args= training_args,
+    train_dataset= train_dataset,
+    eval_dataset= eval_dataset,
+    compute_metrics= compute_metrics,
+    data_collator=data_collactor
+)
+trainer.train()
+
+# %% In [28]:
+get_ipython().run_line_magic('env', 'COMET_MODE=ONLINE')
+get_ipython().run_line_magic('env', 'COMET_LOG_ASSETS=TRUE')
+
+training_args = TrainingArguments(
+    seed=SEED,
+    output_dir="./results",
+    overwrite_output_dir= True,
+    num_train_epochs=1,
+    do_train=True,
+    do_eval=True,
+    evaluation_strategy="steps"
+    eval_steps = 25,
+    save_strategy="steps",
+    save_total_limit=10,
+    save_steps=25,
+    per_device_train_batch_size=8
+)
+
+trainer = Trainer (
+    model=model,
+    args= training_args,
+    train_dataset= train_dataset,
+    eval_dataset= eval_dataset,
+    compute_metrics= compute_metrics,
+    data_collator=data_collactor
+)
+trainer.train()
+
+# %% In [29]:
+get_ipython().run_line_magic('env', 'COMET_MODE=ONLINE')
+get_ipython().run_line_magic('env', 'COMET_LOG_ASSETS=TRUE')
+
+training_args = TrainingArguments(
+    seed=SEED,
+    output_dir="./results",
+    overwrite_output_dir= True,
+    num_train_epochs=1,
+    do_train=True,
+    do_eval=True,
+    evaluation_strategy="steps"
+    eval_steps = 25,
+    save_strategy="steps",
+    save_total_limit=10,
+    save_steps=25,
+    per_device_train_batch_size=8
+)
+
+trainer = Trainer (
+    model=model,
+    args= training_args,
+    train_dataset= train_dataset,
+    eval_dataset= eval_dataset,
+    compute_metrics= compute_metrics,
+    data_collator=data_collator
+)
+trainer.train()
+
+# %% In [30]:
+get_ipython().run_line_magic('env', 'COMET_MODE=ONLINE')
+get_ipython().run_line_magic('env', 'COMET_LOG_ASSETS=TRUE')
+
+training_args = TrainingArguments(
+    seed=SEED,
+    output_dir="./results",
+    overwrite_output_dir= True,
+    num_train_epochs=1,
+    do_train=True,
+    do_eval=True,
+    evaluation_strategy="steps"
+    eval_step = 25,
+    save_strategy="steps",
+    save_total_limit=10,
+    save_steps=25,
+    per_device_train_batch_size=8
+)
+
+trainer = Trainer (
+    model=model,
+    args= training_args,
+    train_dataset= train_dataset,
+    eval_dataset= eval_dataset,
+    compute_metrics= compute_metrics,
+    data_collator=data_collator
+)
+trainer.train()
+
+# %% In [31]:
+get_ipython().run_line_magic('env', 'COMET_MODE=ONLINE')
+get_ipython().run_line_magic('env', 'COMET_LOG_ASSETS=TRUE')
+
+training_args = TrainingArguments(
+    seed=SEED,
+    output_dir="./results",
+    overwrite_output_dir= True,
+    num_train_epochs=1,
+    do_train=True,
+    do_eval=True,
+    evaluation_strategy="steps"
+    eval_steps=25,
+    save_strategy="steps",
+    save_total_limit=10,
+    save_steps=25,
+    per_device_train_batch_size=8
+)
+
+trainer = Trainer (
+    model=model,
+    args= training_args,
+    train_dataset= train_dataset,
+    eval_dataset= eval_dataset,
+    compute_metrics= compute_metrics,
+    data_collator=data_collator
+)
+trainer.train()
+
+# %% In [32]:
+get_ipython().run_line_magic('env', 'COMET_MODE=ONLINE')
+get_ipython().run_line_magic('env', 'COMET_LOG_ASSETS=TRUE')
+
+training_args = TrainingArguments(
+    seed=SEED,
+    output_dir="./results",
+    overwrite_output_dir=True,
+    num_train_epochs=1,
+    do_train=True,
+    do_eval=True,
+    evaluation_strategy="steps"
+    eval_steps=25,
+    save_strategy="steps",
+    save_total_limit=10,
+    save_steps=25,
+    per_device_train_batch_size=8
+)
+
+trainer = Trainer (
+    model=model,
+    args= training_args,
+    train_dataset= train_dataset,
+    eval_dataset= eval_dataset,
+    compute_metrics= compute_metrics,
+    data_collator=data_collator
+)
+trainer.train()
+
+# %% In [33]:
+get_ipython().run_line_magic('env', 'COMET_MODE=ONLINE')
+get_ipython().run_line_magic('env', 'COMET_LOG_ASSETS=TRUE')
+
+training_args = TrainingArguments(
+    seed=SEED,
+    output_dir="./results",
+    overwrite_output_dir=True,
+    num_train_epochs=1,
+    do_train=True,
+    do_eval=True,
+    evaluation_strategy="steps"
+    evaluation_steps=25,
+    save_strategy="steps",
+    save_total_limit=10,
+    save_steps=25,
+    per_device_train_batch_size=8
+)
+
+trainer = Trainer (
+    model=model,
+    args= training_args,
+    train_dataset= train_dataset,
+    eval_dataset= eval_dataset,
+    compute_metrics= compute_metrics,
+    data_collator=data_collator
+)
+trainer.train()
+
+# %% In [34]:
+get_ipython().run_line_magic('env', 'COMET_MODE=ONLINE')
+get_ipython().run_line_magic('env', 'COMET_LOG_ASSETS=TRUE')
+
+training_args = TrainingArguments(
+    seed=SEED,
+    output_dir="./results",
+    overwrite_output_dir=True,
+    num_train_epochs=1,
+    do_train=True,
+    do_eval=True,
+    evaluation_strategy="steps"
+    evaluation_steps=20,
+    save_strategy="steps",
+    save_total_limit=10,
+    save_steps=25,
+    per_device_train_batch_size=8
+)
+
+trainer = Trainer (
+    model=model,
+    args= training_args,
+    train_dataset= train_dataset,
+    eval_dataset= eval_dataset,
+    compute_metrics= compute_metrics,
+    data_collator=data_collator
+)
+trainer.train()
+
+# %% In [35]:
+get_ipython().run_line_magic('env', 'COMET_MODE=ONLINE')
+get_ipython().run_line_magic('env', 'COMET_LOG_ASSETS=TRUE')
+
+training_args = TrainingArguments(
+    seed=SEED,
+    output_dir="./results",
+    overwrite_output_dir=True,
+    num_train_epochs=1,
+    do_train=True,
+    do_eval=True,
+    evaluation_strategy="steps",
+    eval_steps=25,
+    save_strategy="steps",
+    save_total_limit=10,
+    save_steps=25,
+    per_device_train_batch_size=8
+)
+
+trainer = Trainer (
+    model=model,
+    args= training_args,
+    train_dataset= train_dataset,
+    eval_dataset= eval_dataset,
+    compute_metrics= compute_metrics,
+    data_collator=data_collator
+)
+trainer.train()
+
