@@ -5,5 +5,3 @@ This an NLP model which is able to classify imdb movie reviews as either positiv
    
  All the datasete I took from ("https://huggingface.co/distilbert-base-uncased")  
  
-![loss]
-(https://user-images.githubusercontent.com/95357174/194840192-58cc3322-c947-49ee-a111-5c0c5b915849.jpeg)
